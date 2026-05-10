@@ -1005,7 +1005,8 @@
     .tl-item::before { left: 23px; }
 
     /* Mobile-only: Hide year labels on trajectory section */
-    .timeline .tl-year {
+    .timeline .tl-year,
+    .tl-item .tl-year {
       display: none !important;
       visibility: hidden !important;
       opacity: 0 !important;
@@ -1014,6 +1015,8 @@
       overflow: hidden !important;
       position: absolute !important;
       pointer-events: none !important;
+      font-size: 0 !important;
+      color: transparent !important;
     }
     .timeline .tl-item {
       padding-left: 40px !important;
@@ -1041,9 +1044,11 @@
 
   /* Mobile-only: Completely hide trajectory year labels */
   @media (max-width: 767px) {
+    .timeline .tl-year,
+    .tl-item .tl-year,
+    .timeline-track .tl-year,
     section[id*="roadmap"] .tl-year,
     section[id*="trajectory"] .tl-year,
-    .timeline .tl-year,
     .timeline .year-label,
     .timeline .timeline-date,
     .timeline [class*="year"],
@@ -1060,6 +1065,13 @@
       margin: 0 !important;
       padding: 0 !important;
       border: none !important;
+      font-size: 0 !important;
+      color: transparent !important;
+      transform: scale(0) !important;
+    }
+    /* Shift content to fill gap */
+    .timeline .tl-item {
+      padding-left: 40px !important;
     }
   }
 
