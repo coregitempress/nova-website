@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NOVA — National Orbit Value Asset</title>
+<link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/1316705055822446673/1502862161762849032/content.png?ex=6a0140f5&is=69ffef75&hm=925a39bbbc95354fcb39435699b77bd27635ef1ef9fa37b56102c1c283dd600c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ TOKENS ============ */
+  :root {
+    --black: #05060a;
+    --black-2: #0a0c14;
+    --navy: #0d1424;
+    --navy-2: #111a2e;
+    --silver: #c8cdd6;
+    --silver-2: #8a909c;
+    --white: #f4f6fa;
+    --blue: #4a8dff;
+    --blue-glow: #6ba3ff;
+    --blue-deep: #1e3a78;
+    --amber: #ff7a3d;
+    --red: #ff3d4a;
+
+    --grid-line: rgba(255,255,255,0.04);
+    --grid-line-strong: rgba(255,255,255,0.08);
+
+    --font-display: 'Instrument Serif', 'Times New Roman', serif;
+    --font-sans: 'Space Grotesk', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--black); color: var(--white); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; max-width: 100%; }
+  body { font-size: 16px; line-height: 1.5; }
+
+  ::selection { background: var(--blue); color: var(--black); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--navy-2); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--blue-deep); }
+
+  html { scroll-behavior: smooth; }
+  section[id] { scroll-margin-top: 80px; }
+
+  a { color: inherit; text-decoration: none; }
+  button { background: none; border: none; color: inherit; cursor: pointer; font-family: inherit; }
+
+  /* ============ GLOBAL TEXTURE ============ */
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none; z-index: 1;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.7 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4; pointer-events: none; z-index: 2; mix-blend-mode: overlay;
+  }
+
+  /* ============ NAV ============ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(12px);
+    background: linear-gradient(to bottom, rgba(5,6,10,0.6), transparent);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-logo-mark {
+    width: 28px; height: 28px;
+    object-fit: contain;
+    display: block;
+  }
+  .nav-logo-text { font-family: var(--font-sans); font-weight: 600; letter-spacing: 0.25em; font-size: 14px; }
+
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--silver-2);
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--white); }
+
+  .nav-cta {
+    padding: 8px 16px;
+    border: 1px solid rgba(255,255,255,0.15);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--white);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-cta::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: #4eff7a; box-shadow: 0 0 8px #4eff7a;
+    animation: livePulse 2s infinite;
+  }
+  .nav-cta:hover { background: var(--blue); border-color: var(--blue); color: var(--black); }
+  @keyframes livePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ============ HERO ============ */
+  .hero {
+    min-height: 100vh; position: relative;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center; padding: 0 40px;
+    overflow: hidden;
+  }
+  .hero-stars {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 70% 50%, rgba(30,58,120,0.3), transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(74,141,255,0.08), transparent 50%);
+  }
+  .hero-stars-layer {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8), transparent),
+      radial-gradient(1px 1px at 25% 60%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(2px 2px at 40% 30%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1px 1px at 55% 80%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1px 1px at 70% 15%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(2px 2px at 85% 70%, rgba(107,163,255,0.6), transparent),
+      radial-gradient(1px 1px at 95% 40%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,0.5), transparent);
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 620px;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.02);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--silver);
+    margin-bottom: 32px;
+  }
+  .hero-tag::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--amber); box-shadow: 0 0 8px var(--amber);
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 6.5vw, 96px);
+    line-height: 0.95; font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 28px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--blue-glow), var(--silver));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 17px; line-height: 1.6;
+    color: var(--silver); max-width: 480px; margin-bottom: 40px;
+    font-weight: 300;
+  }
+
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 56px; }
+  .btn-primary, .btn-secondary, .btn-ghost {
+    padding: 14px 24px;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.25em;
+    text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 10px;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--white); color: var(--black);
+    border: 1px solid var(--white);
+  }
+  .btn-primary:hover { background: var(--blue-glow); border-color: var(--blue-glow); }
+  .btn-secondary {
+    background: transparent; color: var(--white);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .btn-secondary:hover { border-color: var(--blue); background: rgba(74,141,255,0.05); }
+  .btn-ghost { color: var(--silver-2); padding-left: 0; }
+  .btn-ghost:hover { color: var(--white); }
+  .btn-ghost::before { content: '▶'; font-size: 9px; color: var(--blue); }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 32px; padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    max-width: 520px;
+  }
+  .stat-label {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.25em;
+    color: var(--silver-2); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 400; }
+  .stat-value sub { font-size: 12px; color: var(--silver-2); font-family: var(--font-mono); }
+
+  /* ===== ORBIT VISUAL (right side hero) ===== */
+  .hero-visual {
+    position: relative; z-index: 1;
+    width: 100%; aspect-ratio: 1;
+    max-width: 640px; justify-self: end;
+  }
+  .orbit-svg { width: 100%; height: 100%; }
+  .orbit-svg .earth-glow { fill: url(#earthGrad); }
+  .orbit-svg .orbit-ring { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 0.4; }
+  .orbit-svg .orbit-ring-active { fill: none; stroke: var(--blue); stroke-width: 0.6; opacity: 0.6; stroke-dasharray: 2 4; animation: dashRotate 30s linear infinite; }
+  @keyframes dashRotate { to { stroke-dashoffset: -60; } }
+
+  .orbit-svg .satellite {
+    transform-origin: 50% 50%;
+  }
+  .orbit-svg .satellite-1 { animation: orbitSpin1 24s linear infinite; }
+  .orbit-svg .satellite-2 { animation: orbitSpin2 18s linear infinite reverse; }
+  .orbit-svg .satellite-3 { animation: orbitSpin3 36s linear infinite; }
+  @keyframes orbitSpin1 { to { transform: rotate(360deg); } }
+  @keyframes orbitSpin2 { to { transform: rotate(360deg); } }
+  @keyframes orbitSpin3 { to { transform: rotate(360deg); } }
+
+  .hero-hud {
+    position: absolute; font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.2em; color: var(--silver-2); text-transform: uppercase;
+    pointer-events: none;
+  }
+  .hud-tl { top: 6%; left: 6%; }
+  .hud-tr { top: 6%; right: 6%; text-align: right; }
+  .hud-bl { bottom: 6%; left: 6%; }
+  .hud-br { bottom: 6%; right: 6%; text-align: right; }
+  .hud-line { color: var(--blue); margin-bottom: 4px; font-size: 8px; }
+
+  .corner-bracket {
+    position: absolute; width: 16px; height: 16px;
+    border-color: var(--silver-2); border-style: solid; border-width: 0;
+  }
+  .corner-bracket.tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+  .corner-bracket.tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+  .corner-bracket.bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+  .corner-bracket.br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+  /* Scrolling ticker at bottom of hero */
+  .ticker {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 0; overflow: hidden;
+    background: rgba(5,6,10,0.6);
+    backdrop-filter: blur(8px);
+    z-index: 5;
+  }
+  .ticker-track {
+    display: flex; gap: 64px; white-space: nowrap;
+    animation: tickerScroll 60s linear infinite;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em;
+    color: var(--silver-2);
+  }
+  .ticker-track span { display: inline-flex; align-items: center; gap: 12px; }
+  .ticker-track span::before {
+    content: '◆'; color: var(--blue); font-size: 6px;
+  }
+  .ticker-track .up { color: #4eff7a; }
+  .ticker-track .down { color: var(--red); }
+  @keyframes tickerScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ============ SECTIONS ============ */
+  section { position: relative; padding: 140px 40px; }
+
+  .section-label {
+    display: flex; align-items: center; gap: 16px;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--silver-2);
+    margin-bottom: 32px;
+  }
+  .section-label::before {
+    content: ''; width: 32px; height: 1px; background: var(--blue);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 400; line-height: 1; letter-spacing: -0.02em;
+    margin-bottom: 24px; max-width: 900px;
+  }
+  .section-title em {
+    font-style: italic; color: var(--blue-glow);
+  }
+  .section-sub {
+    font-size: 17px; line-height: 1.6; color: var(--silver);
+    max-width: 600px; font-weight: 300; margin-bottom: 80px;
+  }
+
+  /* ============ WHY NOVA ============ */
+  .why { background: var(--black); }
+  .why-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1px; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .why-card {
+    background: var(--black);
+    padding: 48px;
+    position: relative;
+    transition: background 0.5s;
+    overflow: hidden;
+    cursor: default;
+  }
+  .why-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(74,141,255,0.08), transparent 40%);
+    opacity: 0; transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .why-card:hover::before { opacity: 1; }
+  .why-card:hover { background: var(--black-2); }
+
+  .why-card-num {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em;
+    color: var(--blue); margin-bottom: 60px;
+  }
+  .why-card-icon {
+    width: 56px; height: 56px; margin-bottom: 32px;
+    color: var(--silver);
+  }
+  .why-card h3 {
+    font-family: var(--font-display); font-size: 32px;
+    font-weight: 400; margin-bottom: 16px; line-height: 1.1;
+  }
+  .why-card p { color: var(--silver-2); font-size: 15px; line-height: 1.6; }
+
+  /* ============ APRIL 1ST ============ */
+  .april {
+    background: radial-gradient(ellipse at center, #1a0a0a 0%, var(--black) 60%);
+    text-align: center;
+    border-top: 1px solid rgba(255,61,74,0.15);
+    border-bottom: 1px solid rgba(255,61,74,0.15);
+    overflow: hidden;
+  }
+  .april::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,61,74,0.02) 2px, rgba(255,61,74,0.02) 4px);
+    pointer-events: none;
+  }
+
+  .april-classify {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 8px 16px; margin-bottom: 40px;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    background: rgba(255,61,74,0.05);
+  }
+  .april-classify::before, .april-classify::after {
+    content: ''; width: 8px; height: 8px; background: var(--red);
+    animation: livePulse 1.4s infinite;
+  }
+
+  .april-display {
+    font-family: var(--font-display);
+    font-size: clamp(80px, 16vw, 240px);
+    line-height: 1.1; font-weight: 400;
+    letter-spacing: -0.04em;
+    background: linear-gradient(180deg, #ffffff 0%, #d8dde6 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 0.1em 0;
+    margin-bottom: 24px;
+    text-shadow: 0 0 80px rgba(255,61,74,0.2);
+  }
+  .april-quote {
+    font-family: var(--font-display); font-style: italic;
+    font-size: clamp(20px, 2.4vw, 32px);
+    color: var(--silver); max-width: 720px; margin: 0 auto 64px;
+    line-height: 1.3;
+  }
+
+  .countdown {
+    display: flex; justify-content: center; gap: 24px;
+    margin-bottom: 48px;
+  }
+  .countdown-cell {
+    min-width: 120px; padding: 24px 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.02);
+    backdrop-filter: blur(10px);
+  }
+  .countdown-num {
+    font-family: var(--font-display); font-size: 56px;
+    line-height: 1; color: var(--white); font-variant-numeric: tabular-nums;
+  }
+  .countdown-label {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.3em;
+    color: var(--silver-2); text-transform: uppercase; margin-top: 8px;
+  }
+
+  .april-doc {
+    max-width: 540px; margin: 0 auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 24px; text-align: left;
+    background: rgba(255,255,255,0.02);
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--silver); line-height: 1.7;
+  }
+  .april-doc-redact {
+    display: inline-block; height: 12px; background: var(--white);
+    border-radius: 1px; vertical-align: middle;
+  }
+
+  /* ============ CINEMATIC VIDEO SECTION ============ */
+  .cinematic {
+    min-height: 90vh;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(ellipse at top, rgba(74,141,255,0.08), transparent 60%),
+      var(--black);
+    overflow: hidden;
+    text-align: center;
+  }
+  .cinematic-stage {
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3CradialGradient id='m' cx='50%25' cy='40%25'%3E%3Cstop offset='0%25' stop-color='%231a2440'/%3E%3Cstop offset='100%25' stop-color='%23050610' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect fill='url(%23m)' width='100%25' height='100%25'/%3E%3C/svg%3E");
+    background-size: cover; opacity: 0.6;
+  }
+
+  .mars-container {
+    position: absolute; right: -10%; top: 10%;
+    width: 50%; aspect-ratio: 1;
+    pointer-events: none;
+  }
+  .mars-disk {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 30%, #ff8a5b 0%, #c4502a 30%, #5a1f10 70%, #1a0805 100%);
+    box-shadow:
+      inset -40px -40px 100px rgba(0,0,0,0.6),
+      0 0 120px rgba(255,122,61,0.15);
+    opacity: 0.7;
+    filter: blur(0.5px);
+  }
+  .mars-disk::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background:
+      radial-gradient(2px 2px at 30% 40%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(3px 3px at 60% 30%, rgba(0,0,0,0.2), transparent),
+      radial-gradient(4px 4px at 50% 60%, rgba(0,0,0,0.15), transparent),
+      radial-gradient(2px 2px at 70% 70%, rgba(0,0,0,0.2), transparent);
+  }
+
+  .cinematic-content {
+    position: relative; z-index: 2; max-width: 900px;
+  }
+  .cinematic-mission-id {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.4em;
+    color: var(--blue); text-transform: uppercase; margin-bottom: 32px;
+  }
+  .cinematic-headline {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5.5vw, 84px);
+    line-height: 1; font-weight: 400; letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  .cinematic-headline em { font-style: italic; color: var(--blue-glow); }
+  .cinematic-line {
+    width: 1px; height: 80px; background: linear-gradient(to bottom, var(--blue), transparent);
+    margin: 48px auto 0;
+  }
+
+  /* ============ TOKENOMICS / TERMINAL ============ */
+  .terminal {
+    background: var(--black-2);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .terminal-header {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 40px; align-items: end; margin-bottom: 64px;
+  }
+  .terminal-status {
+    display: flex; gap: 24px;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+    color: var(--silver-2); text-transform: uppercase;
+  }
+  .terminal-status > span { display: flex; align-items: center; gap: 8px; }
+  .terminal-status .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4eff7a; box-shadow: 0 0 8px #4eff7a;
+    animation: livePulse 2s infinite;
+  }
+
+  .terminal-grid {
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 1px; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .terminal-panel {
+    background: var(--black);
+    padding: 32px;
+    position: relative;
+  }
+  .panel-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em;
+    color: var(--silver-2); text-transform: uppercase;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .panel-label .live { color: #4eff7a; }
+
+  .panel-big-num {
+    font-family: var(--font-display); font-size: 56px;
+    line-height: 1; font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+  }
+  .panel-big-num .unit { font-size: 18px; color: var(--silver-2); font-family: var(--font-mono); margin-left: 4px; }
+  .panel-delta {
+    font-family: var(--font-mono); font-size: 11px;
+    color: #4eff7a;
+  }
+  .panel-delta.down { color: var(--red); }
+
+  /* Bar chart in panel */
+  .bar-chart {
+    display: flex; align-items: flex-end; gap: 6px;
+    height: 120px; margin-top: 24px;
+  }
+  .bar-chart .bar {
+    flex: 1; background: linear-gradient(to top, var(--blue-deep), var(--blue));
+    position: relative;
+    transition: opacity 0.3s;
+  }
+  .bar-chart .bar:hover { opacity: 0.7; }
+  .bar-chart .bar.active {
+    background: linear-gradient(to top, var(--blue), var(--blue-glow));
+    box-shadow: 0 0 12px rgba(107,163,255,0.4);
+  }
+
+  /* Allocation list */
+  .alloc-list { margin-top: 8px; }
+  .alloc-item {
+    display: grid; grid-template-columns: 16px 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: var(--font-mono); font-size: 12px;
+  }
+  .alloc-item:last-child { border-bottom: none; }
+  .alloc-dot { width: 8px; height: 8px; }
+  .alloc-name { color: var(--silver); letter-spacing: 0.05em; }
+  .alloc-pct { color: var(--white); font-variant-numeric: tabular-nums; }
+
+  /* Allocation donut */
+  .donut-wrap {
+    display: flex; align-items: center; gap: 24px; margin-top: 12px;
+  }
+  .donut { width: 140px; height: 140px; flex-shrink: 0; }
+  .donut circle { fill: none; stroke-width: 14; }
+
+  /* Sparkline */
+  .sparkline { width: 100%; height: 80px; margin-top: 24px; }
+  .sparkline path { fill: none; stroke: var(--blue-glow); stroke-width: 1.5; }
+  .sparkline .area { fill: url(#sparkGrad); stroke: none; opacity: 0.3; }
+
+  /* ============ ECOSYSTEM ============ */
+  .ecosystem {
+    background: var(--black);
+  }
+  .eco-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .eco-card {
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    position: relative; overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: default;
+  }
+  .eco-card:hover {
+    border-color: rgba(74,141,255,0.3);
+    transform: translateY(-4px);
+    background: linear-gradient(180deg, rgba(74,141,255,0.04), rgba(74,141,255,0));
+  }
+  .eco-card::after {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 40%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blue));
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .eco-card:hover::after { opacity: 1; }
+
+  .eco-icon {
+    width: 48px; height: 48px; margin-bottom: 32px;
+    color: var(--blue-glow);
+  }
+  .eco-card h4 {
+    font-family: var(--font-sans); font-weight: 500;
+    font-size: 18px; letter-spacing: 0.02em;
+    margin-bottom: 12px;
+  }
+  .eco-card p { color: var(--silver-2); font-size: 14px; line-height: 1.5; }
+  .eco-meta {
+    display: flex; justify-content: space-between;
+    margin-top: 24px; padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.2em; color: var(--silver-2); text-transform: uppercase;
+  }
+  .eco-meta .status-live { color: #4eff7a; }
+  .eco-meta .status-soon { color: var(--amber); }
+
+  /* ============ TIMELINE ============ */
+  .timeline {
+    background: var(--black-2);
+  }
+  .timeline-track {
+    position: relative;
+    margin-top: 80px;
+  }
+  .timeline-track::before {
+    content: ''; position: absolute; left: 80px; top: 0; bottom: 0;
+    width: 1px; background: linear-gradient(to bottom,
+      transparent, rgba(255,255,255,0.15) 10%, rgba(255,255,255,0.15) 90%, transparent);
+  }
+  .tl-item {
+    position: relative;
+    padding-left: 160px;
+    padding-bottom: 80px;
+  }
+  .tl-item::before {
+    content: ''; position: absolute; left: 75px; top: 12px;
+    width: 11px; height: 11px;
+    background: var(--black-2);
+    border: 1px solid var(--silver);
+  }
+  .tl-item.active::before {
+    background: var(--blue);
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(74,141,255,0.15), 0 0 20px var(--blue);
+  }
+  .tl-year {
+    position: absolute; left: 0; top: 8px;
+    font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.2em;
+    color: var(--silver-2);
+  }
+  .tl-item.active .tl-year { color: var(--blue); }
+  .tl-title {
+    font-family: var(--font-display); font-size: 32px;
+    font-weight: 400; line-height: 1.1; margin-bottom: 12px;
+  }
+  .tl-desc { color: var(--silver-2); font-size: 15px; line-height: 1.6; max-width: 540px; }
+  .tl-status {
+    display: inline-block; margin-top: 16px;
+    padding: 4px 10px;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.25em;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--silver-2);
+  }
+  .tl-item.active .tl-status {
+    color: var(--blue); border-color: var(--blue);
+  }
+
+  /* ============ RESERVE ============ */
+  .reserve {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; position: relative; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(74,141,255,0.15), transparent 60%),
+      var(--black);
+  }
+  .reserve-earth {
+    position: absolute; bottom: -60%; left: 50%; transform: translateX(-50%);
+    width: 140%; aspect-ratio: 1; max-width: 1600px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 40%, #4a8dff 0%, #1e3a78 30%, #0a1428 60%, transparent 75%);
+    box-shadow:
+      inset 100px 60px 200px rgba(0,0,0,0.6),
+      0 -60px 120px rgba(74,141,255,0.2);
+    opacity: 0.8;
+  }
+  .reserve-earth::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background:
+      radial-gradient(2px 1px at 30% 30%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(3px 2px at 50% 35%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(2px 1px at 60% 50%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(4px 2px at 40% 45%, rgba(255,255,255,0.2), transparent);
+    mix-blend-mode: overlay;
+  }
+
+  .reserve-content { position: relative; z-index: 2; }
+  .reserve-display {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 7.5vw, 124px);
+    line-height: 0.95; font-weight: 400;
+    letter-spacing: -0.025em;
+    max-width: 1100px;
+  }
+  .reserve-display em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--blue-glow), var(--white));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .reserve-tag {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.4em; color: var(--silver-2);
+    text-transform: uppercase; margin-top: 40px;
+  }
+
+  /* ============ CTA ============ */
+  .cta {
+    text-align: center;
+    background:
+      radial-gradient(ellipse at center, rgba(74,141,255,0.06), transparent 60%),
+      var(--black);
+    padding: 180px 40px 80px;
+    overflow: hidden;
+    position: relative;
+  }
+  .cta-particles {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(2px 2px at 75% 30%, rgba(107,163,255,0.5), transparent),
+      radial-gradient(1px 1px at 50% 60%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1px 1px at 25% 85%, rgba(255,255,255,0.4), transparent);
+    pointer-events: none;
+  }
+
+  .cta-mark {
+    width: 100px; height: 100px; margin: 0 auto 48px;
+    position: relative;
+  }
+  .cta-mark svg { width: 100%; height: 100%; animation: rotate 60s linear infinite; }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+
+  .cta-title {
+    font-family: var(--font-display);
+    font-size: clamp(56px, 8vw, 140px);
+    line-height: 0.95; font-weight: 400;
+    margin-bottom: 24px;
+    letter-spacing: -0.025em;
+  }
+  .cta-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--blue-glow), var(--silver));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cta-sub {
+    font-size: 18px; color: var(--silver); max-width: 560px;
+    margin: 0 auto 48px; line-height: 1.5; font-weight: 300;
+  }
+  .cta-buttons {
+    display: flex; gap: 12px; justify-content: center; margin-bottom: 80px;
+    flex-wrap: wrap;
+  }
+
+  .contract {
+    max-width: 640px; margin: 0 auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    backdrop-filter: blur(10px);
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+  }
+  .contract-label {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em;
+    color: var(--silver-2); text-transform: uppercase;
+  }
+  .contract-addr {
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--white); flex: 1; overflow: hidden;
+    text-overflow: ellipsis; text-align: left;
+    margin-left: 16px;
+  }
+  .contract-copy {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em;
+    color: var(--blue); text-transform: uppercase;
+    padding: 6px 10px; border: 1px solid var(--blue); cursor: pointer;
+    transition: all 0.3s;
+  }
+  .contract-copy:hover { background: var(--blue); color: var(--black); }
+
+  .hero-contract {
+    margin: 24px 0 0 0;
+    width: 100%;
+    max-width: 520px;
+    padding: 8px 12px;
+    gap: 10px;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+  .hero-contract .contract-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .hero-contract .contract-addr {
+    font-size: 10px;
+    margin-left: 0;
+    white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hero-contract .contract-copy {
+    font-size: 8px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 48px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 24px;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em;
+    color: var(--silver-2); text-transform: uppercase;
+  }
+  footer .legal { max-width: 600px; line-height: 1.6; text-transform: none; letter-spacing: 0.05em; font-size: 11px; }
+  footer .links { display: flex; gap: 24px; }
+  footer .links a:hover { color: var(--white); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 980px) {
+    /* ----- Nav ----- */
+    .nav { padding: 14px 18px; }
+    .nav-links { display: none; }
+    .nav-cta { padding: 8px 14px; font-size: 10px; }
+    .nav-logo-text { font-size: 12px; }
+
+    /* ----- Section spacing ----- */
+    section { padding: 80px 20px; }
+
+    /* ----- Hero ----- */
+    .hero { 
+      grid-template-columns: 1fr; 
+      padding: 110px 0 80px; 
+      min-height: auto; 
+      justify-items: center; 
+      align-content: center; 
+      width: 100%; 
+      max-width: 100%; 
+      min-width: 0;
+      overflow-x: hidden; 
+      box-sizing: border-box;
+    }
+    .hero-visual { display: none; }
+    .hero-content { 
+      margin: 0 auto; 
+      text-align: center; 
+      max-width: 100%; 
+      width: 100%; 
+      min-width: 0;
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      box-sizing: border-box;
+    }
+    .hero h1 { 
+      font-size: clamp(40px, 11vw, 64px); 
+      margin-bottom: 22px; 
+      text-align: center; 
+      width: 100%; 
+      max-width: 100%;
+      min-width: 0;
+    }
+    .hero-sub { 
+      font-size: 15px; 
+      margin: 0 auto 32px; 
+      max-width: min(680px, calc(100% - 40px)); 
+      text-align: center; 
+      width: 100%; 
+      padding-inline: 20px;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+    .hero-tag { margin: 0 auto 28px; font-size: 9px; }
+    .hero-ctas { justify-content: center; margin-bottom: 40px; width: 100%; }
+    .btn-primary, .btn-secondary, .btn-ghost { padding: 12px 18px; font-size: 10px; }
+
+    /* Hero contract block */
+    .hero-contract {
+      margin: 24px auto 0;
+      width: min(100%, calc(100vw - 40px));
+      max-width: 760px;
+      margin-inline: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px 12px;
+      box-sizing: border-box;
+      gap: 8px;
+      min-width: 0;
+    }
+    .hero-contract .contract-label { 
+      font-size: 8px; 
+      letter-spacing: 0.2em; 
+      flex-shrink: 0;
+    }
+    .hero-contract .contract-addr { 
+      font-size: 9px; 
+      text-align: center; 
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1 1 auto;
+      max-width: 100%;
+    }
+    .hero-contract .contract-copy { 
+      font-size: 8px; 
+      padding: 4px 6px; 
+      flex-shrink: 0;
+    }
+
+    /* Hero stats — stack vertically with dividers */
+    .hero-stats {
+      grid-template-columns: 1fr;
+      gap: 16px; 
+      max-width: 100%;
+      margin: 24px auto 0; 
+      padding: 24px 20px 0;
+      text-align: center;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    .hero-stats > div { 
+      text-align: center; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .stat-label { text-align: center; }
+    .stat-value { font-size: 26px; text-align: center; }
+
+    /* ----- Section titles ----- */
+    .section-title { font-size: clamp(32px, 8vw, 48px); }
+    .section-label { font-size: 10px; }
+    .section-sub { font-size: 14px; }
+
+    /* ----- Why / Mission grid ----- */
+    .why-grid { grid-template-columns: 1fr; gap: 16px; }
+    .why-card { padding: 24px; }
+
+    /* ----- April / Announcement ----- */
+    .april-classify { font-size: 9px; letter-spacing: 0.2em; padding: 8px 14px; }
+    .april-quote { font-size: clamp(16px, 4.2vw, 22px); margin-bottom: 40px; padding: 0 8px; }
+    .countdown { gap: 6px; flex-wrap: nowrap; }
+    .countdown-cell { min-width: 0; flex: 1; padding: 14px 4px; }
+    .countdown-num { font-size: clamp(22px, 7vw, 32px); }
+    .countdown-label { font-size: 8px; letter-spacing: 0.15em; }
+    .april-doc { font-size: 11px; padding: 20px; }
+
+    /* ----- Cinematic ----- */
+    .cinematic-headline { font-size: clamp(28px, 7.5vw, 48px); padding: 0 8px; }
+
+    /* ----- Terminal / Capitalization ----- */
+    .terminal-header { grid-template-columns: 1fr; gap: 20px; margin-bottom: 40px; }
+    .terminal-status { flex-wrap: wrap; gap: 14px; font-size: 9px; }
+    .terminal-grid { grid-template-columns: 1fr; }
+    .terminal-panel { padding: 24px; }
+    .panel-big-num { font-size: 42px; }
+    .panel-big-num .unit { font-size: 14px; }
+    .bar-chart { height: 90px; gap: 4px; }
+    .donut-wrap { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .donut { width: 120px; height: 120px; }
+    .alloc-item { font-size: 11px; gap: 8px; }
+    .panel-label { font-size: 9px; }
+
+    /* ----- Ecosystem ----- */
+    .eco-grid { grid-template-columns: 1fr; gap: 14px; }
+    .eco-card { padding: 24px; }
+
+    /* ----- Timeline / Trajectory ----- */
+    .tl-item { padding-left: 70px; padding-right: 0; }
+    .timeline-track::before { left: 28px; }
+    .tl-item::before { left: 23px; }
+
+    /* Mobile-only: Hide year labels on trajectory section */
+    .timeline .tl-year {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: hidden !important;
+      position: absolute !important;
+      pointer-events: none !important;
+    }
+    .timeline .tl-item {
+      padding-left: 40px !important;
+    }
+    .timeline .timeline-track::before {
+      left: 8px !important;
+    }
+    .timeline .tl-item::before {
+      left: 3px !important;
+    }
+
+    /* ----- CTA / Bottom contract ----- */
+    .cta-title { font-size: clamp(36px, 9vw, 56px); }
+    .cta-sub { font-size: 14px; padding: 0 8px; }
+    .contract { padding: 14px 16px; gap: 10px; }
+    .contract .contract-label { font-size: 9px; letter-spacing: 0.2em; }
+    .contract .contract-addr { font-size: 10px; min-width: 0; overflow: hidden; text-overflow: ellipsis; margin-left: 8px; }
+    .contract .contract-copy { font-size: 9px; padding: 5px 8px; }
+
+    /* ----- Footer ----- */
+    footer { flex-direction: column; align-items: flex-start; gap: 24px; padding: 40px 20px; }
+    footer .legal { font-size: 10px; max-width: 100%; }
+    footer .links { flex-wrap: wrap; gap: 18px; }
+  }
+
+  /* Mobile-only: Completely hide trajectory year labels */
+  @media (max-width: 767px) {
+    section[id*="roadmap"] .tl-year,
+    section[id*="trajectory"] .tl-year,
+    .timeline .tl-year,
+    .timeline .year-label,
+    .timeline .timeline-date,
+    .timeline [class*="year"],
+    .timeline [class*="date"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: hidden !important;
+      position: absolute !important;
+      pointer-events: none !important;
+      clip: rect(0,0,0,0) !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+  }
+
+  /* Extra tight mobile (<= 480px) */
+  @media (max-width: 480px) {
+    .countdown-cell { padding: 12px 2px; }
+    .countdown-num { font-size: 22px; }
+    .panel-big-num { font-size: 36px; }
+    .terminal-panel { padding: 20px; }
+    .why-card, .eco-card { padding: 20px; }
+    .hero h1 { font-size: 38px; }
+    .section-title { font-size: 28px; }
+    .nav-logo-text { display: none; }
+  }
+
+  /* Reveal animation on scroll */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 1s, transform 1s; }
+  .reveal.in { opacity: 1; transform: none; }
+
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="nav-logo">
+    <img src="https://cdn.discordapp.com/attachments/1316705055822446673/1502865131745317034/content.png?ex=6a0143b9&is=69fff239&hm=4e9da64345fac211f6916424db51aa7ff9e4f3b0d3843114d4ea3e674b954dd3&" alt="NOVA" class="nav-logo-mark" />
+    <div class="nav-logo-text">NOVA</div>
+  </div>
+  <div class="nav-links">
+    <a href="#mission">Mission</a>
+    <a href="#announcement">Announcement</a>
+    <a href="#tokenomics">Reserve</a>
+    <a href="#ecosystem">Ecosystem</a>
+    <a href="#roadmap">Trajectory</a>
+  </div>
+  <button class="nav-cta">Acquire $NOVA</button>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-stars">
+    <div class="hero-stars-layer"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-tag">● Orbital Finance Initiative — Phase 01</div>
+    <h1>The Financial <em>Infrastructure</em><br>Of Space.</h1>
+    <p class="hero-sub">
+      NOVA is the first digital orbit asset designed to tokenize the next era of American space infrastructure — bringing satellite networks, lunar logistics, and orbital reserves on-chain under a single institutional framework.
+    </p>
+    <div class="contract hero-contract">
+      <div class="contract-label">(CA)</div>
+      <div class="contract-addr" id="contractAddrHero">0xN0VA…0RB1T7AF22B5C9E1D3F84A6B7C8D9E0F1A2B3C4D5E6F</div>
+      <button class="contract-copy" id="copyBtnHero">Copy</button>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-label">Target Reserve</div>
+        <div class="stat-value">$1.2<sub> T</sub></div>
+      </div>
+      <div>
+        <div class="stat-label">Orbital Assets</div>
+        <div class="stat-value">2,847</div>
+      </div>
+      <div>
+        <div class="stat-label">Network Nodes</div>
+        <div class="stat-value">119<sub> / 200</sub></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="corner-bracket tl"></div>
+    <div class="corner-bracket tr"></div>
+    <div class="corner-bracket bl"></div>
+    <div class="corner-bracket br"></div>
+
+    <div class="hero-hud hud-tl">
+      <div class="hud-line">// ORBIT-VIS</div>
+      <div>NODE 0119</div>
+      <div>LAT 28.5° N</div>
+      <div>LON 80.6° W</div>
+    </div>
+    <div class="hero-hud hud-tr">
+      <div class="hud-line">// TELEMETRY</div>
+      <div>VEL 7.66 KM/S</div>
+      <div>ALT 408 KM</div>
+      <div>SIG NOMINAL</div>
+    </div>
+    <div class="hero-hud hud-bl">
+      <div class="hud-line">// FRAME</div>
+      <div>EARTH-CENTERED</div>
+      <div>INERTIAL J2000</div>
+    </div>
+    <div class="hero-hud hud-br">
+      <div class="hud-line">// SYNC</div>
+      <div id="heroClock">00:00:00 UTC</div>
+      <div>VAR ±0.04 MS</div>
+    </div>
+
+    <svg class="orbit-svg" viewBox="0 0 600 600">
+      <defs>
+        <radialGradient id="earthGrad" cx="40%" cy="40%">
+          <stop offset="0%" stop-color="#4a8dff" stop-opacity="0.9"/>
+          <stop offset="40%" stop-color="#1e3a78" stop-opacity="0.7"/>
+          <stop offset="80%" stop-color="#0a1428" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="atmosphere" cx="50%" cy="50%">
+          <stop offset="80%" stop-color="#6ba3ff" stop-opacity="0"/>
+          <stop offset="92%" stop-color="#6ba3ff" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#6ba3ff" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+
+      <!-- Outer hud rings -->
+      <circle cx="300" cy="300" r="290" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5" />
+      <circle cx="300" cy="300" r="270" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" stroke-dasharray="1 3" />
+
+      <!-- Tick marks around outer ring -->
+      <g stroke="rgba(255,255,255,0.2)" stroke-width="0.5">
+        <g id="ticks"></g>
+      </g>
+
+      <!-- Earth -->
+      <circle cx="300" cy="300" r="100" fill="url(#earthGrad)" />
+      <circle cx="300" cy="300" r="105" fill="url(#atmosphere)" />
+
+      <!-- Continent suggestions removed -->
+
+      <!-- Orbit rings -->
+      <ellipse class="orbit-ring" cx="300" cy="300" rx="160" ry="60" transform="rotate(20 300 300)"/>
+      <ellipse class="orbit-ring-active" cx="300" cy="300" rx="200" ry="80" transform="rotate(-10 300 300)"/>
+      <ellipse class="orbit-ring" cx="300" cy="300" rx="240" ry="100" transform="rotate(45 300 300)"/>
+      <ellipse class="orbit-ring" cx="300" cy="300" rx="180" ry="180"/>
+
+      <!-- Satellites -->
+      <g class="satellite satellite-1">
+        <g transform="translate(460, 300)">
+          <rect x="-5" y="-2" width="10" height="4" fill="#fff"/>
+          <rect x="-12" y="-1" width="6" height="2" fill="#6ba3ff"/>
+          <rect x="6" y="-1" width="6" height="2" fill="#6ba3ff"/>
+        </g>
+      </g>
+      <g class="satellite satellite-2" transform="rotate(-10 300 300)">
+        <g transform="translate(500, 300)">
+          <rect x="-4" y="-2" width="8" height="4" fill="#fff"/>
+          <rect x="-9" y="-1" width="4" height="2" fill="#ff7a3d"/>
+          <rect x="5" y="-1" width="4" height="2" fill="#ff7a3d"/>
+        </g>
+      </g>
+      <g class="satellite satellite-3" transform="rotate(45 300 300)">
+        <g transform="translate(540, 300)">
+          <circle cx="0" cy="0" r="3" fill="#fff"/>
+          <circle cx="0" cy="0" r="6" fill="none" stroke="#6ba3ff" stroke-width="0.5" opacity="0.6"/>
+        </g>
+      </g>
+
+      <!-- Crosshair -->
+      <line x1="300" y1="40" x2="300" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+      <line x1="300" y1="520" x2="300" y2="560" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+      <line x1="40" y1="300" x2="80" y2="300" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+      <line x1="520" y1="300" x2="560" y2="300" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+    </svg>
+  </div>
+
+  <!-- Bottom ticker -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span>NOVA <span class="up">+12.47%</span></span>
+      <span>ORBITAL RESERVE INDEX <span class="up">+3.12%</span></span>
+      <span>LEO CAPACITY 87.3% NOMINAL</span>
+      <span>SAT-LINK TLY <span class="up">+0.04 MS</span></span>
+      <span>NET YIELD 8.42% APY</span>
+      <span>STRATEGIC RESERVE 119 / 200 NODES</span>
+      <span>NOVA <span class="up">+12.47%</span></span>
+      <span>ORBITAL RESERVE INDEX <span class="up">+3.12%</span></span>
+      <span>LEO CAPACITY 87.3% NOMINAL</span>
+      <span>SAT-LINK TLY <span class="up">+0.04 MS</span></span>
+      <span>NET YIELD 8.42% APY</span>
+      <span>STRATEGIC RESERVE 119 / 200 NODES</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY NOVA ============ -->
+<section class="why" id="mission">
+  <div class="section-label">// 02 — Mission Doctrine</div>
+  <h2 class="section-title">A reserve asset built for what comes <em>after</em> Earth.</h2>
+  <p class="section-sub">Four pillars define the NOVA framework — each engineered to bring the next century of American orbital and aerospace capacity onto a single transparent ledger.</p>
+
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-card-num">01</div>
+      <svg class="why-card-icon" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="14" y="14" width="28" height="28"/>
+        <rect x="20" y="20" width="16" height="16"/>
+        <line x1="14" y1="14" x2="6" y2="6"/>
+        <line x1="42" y1="14" x2="50" y2="6"/>
+        <line x1="14" y1="42" x2="6" y2="50"/>
+        <line x1="42" y1="42" x2="50" y2="50"/>
+      </svg>
+      <h3>Tokenized Space Infrastructure</h3>
+      <p>Satellites, ground stations, and launch capacity represented as institutionally-audited on-chain instruments. Real-yield from real assets measured in orbital uptime.</p>
+    </div>
+
+    <div class="why-card">
+      <div class="why-card-num">02</div>
+      <svg class="why-card-icon" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1">
+        <circle cx="28" cy="28" r="20"/>
+        <ellipse cx="28" cy="28" rx="20" ry="8"/>
+        <line x1="8" y1="28" x2="48" y2="28"/>
+        <line x1="28" y1="8" x2="28" y2="48"/>
+      </svg>
+      <h3>Orbital Treasury System</h3>
+      <p>A multi-tier reserve allocator that custodies, rebalances, and stress-tests holdings across LEO, MEO, and GEO regimes — designed for sovereign and institutional balance sheets.</p>
+    </div>
+
+    <div class="why-card">
+      <div class="why-card-num">03</div>
+      <svg class="why-card-icon" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1">
+        <polygon points="28,8 48,20 48,40 28,52 8,40 8,20"/>
+        <polygon points="28,18 38,24 38,36 28,42 18,36 18,24"/>
+        <line x1="28" y1="8" x2="28" y2="18"/>
+        <line x1="28" y1="42" x2="28" y2="52"/>
+      </svg>
+      <h3>American Strategic Reserve</h3>
+      <p>An aligned framework for domestic aerospace capacity — built to keep the next reserve layer denominated, governed, and secured under American institutional standards.</p>
+    </div>
+
+    <div class="why-card">
+      <div class="why-card-num">04</div>
+      <svg class="why-card-icon" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1">
+        <circle cx="28" cy="28" r="6"/>
+        <circle cx="28" cy="28" r="14" stroke-dasharray="2 3"/>
+        <circle cx="28" cy="28" r="22" stroke-dasharray="1 4"/>
+        <circle cx="44" cy="20" r="2" fill="currentColor"/>
+        <circle cx="14" cy="36" r="2" fill="currentColor"/>
+      </svg>
+      <h3>Space-Backed Digital Assets</h3>
+      <p>Every NOVA unit is collateralized by a verifiable basket of orbital revenue streams, infrastructure equity, and aerospace cashflow — auditable in real time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APRIL 1ST ============ -->
+<section class="april" id="announcement">
+  <div class="april-classify">⬢ Classified Briefing — Phase 02</div>
+  <div class="april-display">JUNE 08</div>
+  <p class="april-quote">"The next financial revolution may not begin on Earth."</p>
+
+  <div class="countdown" id="countdown">
+    <div class="countdown-cell"><div class="countdown-num" id="cd-d">00</div><div class="countdown-label">Days</div></div>
+    <div class="countdown-cell"><div class="countdown-num" id="cd-h">00</div><div class="countdown-label">Hours</div></div>
+    <div class="countdown-cell"><div class="countdown-num" id="cd-m">00</div><div class="countdown-label">Minutes</div></div>
+    <div class="countdown-cell"><div class="countdown-num" id="cd-s">00</div><div class="countdown-label">Seconds</div></div>
+  </div>
+
+  <div class="april-doc">
+    <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:12px;">
+      <span>DOC ID // NOVA-OR-001</span>
+      <span style="color:var(--red)">CLASSIFICATION: ORBITAL</span>
+    </div>
+    SUBJECT: Strategic capitalization of <span class="april-doc-redact" style="width:80px"></span> orbital infrastructure under the National Orbit Value Asset framework.<br><br>
+    PURPOSE: To establish a transparent on-chain reserve denominated in <span class="april-doc-redact" style="width:120px"></span> with full institutional custody under <span class="april-doc-redact" style="width:60px"></span> standards.<br><br>
+    BRIEFING WINDOW: 09:00 — 11:00 UTC.
+  </div>
+</section>
+
+<!-- ============ CINEMATIC ============ -->
+<section class="cinematic">
+  <div class="cinematic-stage"></div>
+  <div class="mars-container">
+    <div class="mars-disk"></div>
+  </div>
+  <div class="cinematic-content">
+    <div class="cinematic-mission-id">// MISSION FRAME — NOVA-CIN-001</div>
+    <h2 class="cinematic-headline">Earth was the first frontier.<br><em>NOVA leads the next one.</em></h2>
+    <div class="cinematic-line"></div>
+  </div>
+</section>
+
+<!-- ============ TOKENOMICS / TERMINAL ============ -->
+<section class="terminal" id="tokenomics">
+  <div class="terminal-header">
+    <div>
+      <div class="section-label">// 04 — Reserve Terminal</div>
+      <h2 class="section-title">Capitalization, in <em>real time</em>.</h2>
+    </div>
+    <div class="terminal-status">
+      <span><span class="dot"></span>Live</span>
+      <span>Block 19,847,231</span>
+      <span>Latency 42ms</span>
+    </div>
+  </div>
+
+  <div class="terminal-grid">
+    <!-- Panel 1 — Allocation -->
+    <div class="terminal-panel">
+      <div class="panel-label"><span>Reserve Allocation</span><span class="live">●  LIVE</span></div>
+      <div class="donut-wrap">
+        <svg class="donut" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.06)"/>
+
+          <circle cx="40" cy="40" r="32" stroke="#4a8dff" stroke-dasharray="80 201" transform="rotate(-90 40 40)"/>
+          <circle cx="40" cy="40" r="32" stroke="#6ba3ff" stroke-dasharray="50 201" stroke-dashoffset="-80" transform="rotate(-90 40 40)"/>
+          <circle cx="40" cy="40" r="32" stroke="#c8cdd6" stroke-dasharray="35 201" stroke-dashoffset="-130" transform="rotate(-90 40 40)"/>
+          <circle cx="40" cy="40" r="32" stroke="#ff7a3d" stroke-dasharray="20 201" stroke-dashoffset="-165" transform="rotate(-90 40 40)"/>
+          <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.3)" stroke-dasharray="16 201" stroke-dashoffset="-185" transform="rotate(-90 40 40)"/>
+        </svg>
+        <div class="alloc-list" style="flex:1">
+          <div class="alloc-item"><div class="alloc-dot" style="background:#4a8dff"></div><div class="alloc-name">Orbital Reserve</div><div class="alloc-pct">40%</div></div>
+          <div class="alloc-item"><div class="alloc-dot" style="background:#6ba3ff"></div><div class="alloc-name">Infrastructure</div><div class="alloc-pct">25%</div></div>
+          <div class="alloc-item"><div class="alloc-dot" style="background:#c8cdd6"></div><div class="alloc-name">Treasury</div><div class="alloc-pct">17%</div></div>
+          <div class="alloc-item"><div class="alloc-dot" style="background:#ff7a3d"></div><div class="alloc-name">Yield</div><div class="alloc-pct">10%</div></div>
+          <div class="alloc-item"><div class="alloc-dot" style="background:rgba(255,255,255,0.3)"></div><div class="alloc-name">Public</div><div class="alloc-pct">8%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2 — Capitalization -->
+    <div class="terminal-panel">
+      <div class="panel-label"><span>Orbit Capitalization</span><span>USD</span></div>
+      <div class="panel-big-num" id="capNum">1.247<span class="unit">B</span></div>
+      <div class="panel-delta">▲ 12.47% / 24h</div>
+      <svg class="sparkline" viewBox="0 0 240 80" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="sparkGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#6ba3ff" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#6ba3ff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path class="area" d="M0,60 L20,55 L40,58 L60,48 L80,52 L100,40 L120,42 L140,30 L160,32 L180,22 L200,25 L220,15 L240,18 L240,80 L0,80 Z"/>
+        <path d="M0,60 L20,55 L40,58 L60,48 L80,52 L100,40 L120,42 L140,30 L160,32 L180,22 L200,25 L220,15 L240,18"/>
+      </svg>
+    </div>
+
+    <!-- Panel 3 — Burn -->
+    <div class="terminal-panel">
+      <div class="panel-label"><span>Burn Mechanics</span><span>30D</span></div>
+      <div class="panel-big-num">847.2<span class="unit">K</span></div>
+      <div class="panel-delta">▲ Burned in cycle</div>
+      <div class="bar-chart">
+        <div class="bar" style="height:30%"></div>
+        <div class="bar" style="height:42%"></div>
+        <div class="bar" style="height:38%"></div>
+        <div class="bar" style="height:55%"></div>
+        <div class="bar" style="height:60%"></div>
+        <div class="bar" style="height:48%"></div>
+        <div class="bar" style="height:72%"></div>
+        <div class="bar" style="height:65%"></div>
+        <div class="bar" style="height:80%"></div>
+        <div class="bar active" style="height:92%"></div>
+      </div>
+    </div>
+
+    <!-- Panel 4 — Yield -->
+    <div class="terminal-panel">
+      <div class="panel-label"><span>Net Orbital Yield</span><span>APY</span></div>
+      <div class="panel-big-num">8.42<span class="unit">%</span></div>
+      <div class="panel-delta">▲ 0.18% / 7d</div>
+      <p style="color:var(--silver-2);font-size:12px;margin-top:24px;line-height:1.6">
+        Yield distributed from satellite operating revenue, ground-station leases, and orbital capacity rentals — settled weekly on-chain.
+      </p>
+    </div>
+
+    <!-- Panel 5 — Reserve Nodes -->
+    <div class="terminal-panel">
+      <div class="panel-label"><span>Reserve Nodes</span><span>OPERATIONAL</span></div>
+      <div class="panel-big-num">119<span class="unit"> / 200</span></div>
+      <div class="panel-delta">▲ 3 nodes / 24h</div>
+      <div style="margin-top:24px;display:grid;grid-template-columns:repeat(20,1fr);gap:3px">
+        <!-- generated by JS -->
+        <span id="nodeGrid"></span>
+      </div>
+    </div>
+
+    <!-- Panel 6 — Strategic supply -->
+    <div class="terminal-panel">
+      <div class="panel-label"><span>Strategic Supply</span><span>NOVA</span></div>
+      <div class="panel-big-num">100<span class="unit">M</span></div>
+      <div class="panel-delta">▲ Fixed ceiling</div>
+      <div style="margin-top:24px;font-family:var(--font-mono);font-size:11px;color:var(--silver-2);line-height:1.8">
+        <div style="display:flex;justify-content:space-between"><span>CIRCULATING</span><span style="color:var(--white)">42.7M</span></div>
+        <div style="display:flex;justify-content:space-between"><span>VESTED</span><span style="color:var(--white)">35.4M</span></div>
+        <div style="display:flex;justify-content:space-between"><span>RESERVED</span><span style="color:var(--white)">21.9M</span></div>
+        <div style="display:flex;justify-content:space-between"><span>BURN-TO-DATE</span><span style="color:#4eff7a">847.2K</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ECOSYSTEM ============ -->
+<section class="ecosystem" id="ecosystem">
+  <div class="section-label">// 05 — Orbit Ecosystem</div>
+  <h2 class="section-title">Six layers. <em>One mission.</em></h2>
+  <p class="section-sub">A vertically-integrated stack — from settlement chain to AI-managed orbital allocation — engineered to scale with American aerospace capacity.</p>
+
+  <div class="eco-grid">
+    <div class="eco-card">
+      <svg class="eco-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="8" y="14" width="32" height="20"/>
+        <line x1="8" y1="22" x2="40" y2="22"/>
+        <circle cx="14" cy="18" r="1" fill="currentColor"/>
+        <circle cx="20" cy="18" r="1" fill="currentColor"/>
+      </svg>
+      <h4>NOVA Chain</h4>
+      <p>Sovereign settlement layer purpose-built for high-throughput orbital data and aerospace asset transfers.</p>
+      <div class="eco-meta"><span>Layer 01</span><span class="status-live">● Operational</span></div>
+    </div>
+
+    <div class="eco-card">
+      <svg class="eco-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M8 32 L24 8 L40 32 Z"/>
+        <line x1="16" y1="32" x2="32" y2="32"/>
+        <circle cx="24" cy="22" r="3"/>
+      </svg>
+      <h4>Orbit Treasury</h4>
+      <p>Programmable reserve allocator with multi-tier custody and orbital regime-aware rebalancing.</p>
+      <div class="eco-meta"><span>Layer 02</span><span class="status-live">● Operational</span></div>
+    </div>
+
+    <div class="eco-card">
+      <svg class="eco-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
+        <circle cx="24" cy="24" r="14"/>
+        <circle cx="24" cy="24" r="6"/>
+        <line x1="24" y1="10" x2="24" y2="38"/>
+      </svg>
+      <h4>Orbital Yield</h4>
+      <p>Real-revenue distribution from satellite uptime, ground leases, and bandwidth rentals — weekly on-chain settlement.</p>
+      <div class="eco-meta"><span>Layer 03</span><span class="status-live">● Operational</span></div>
+    </div>
+
+    <div class="eco-card">
+      <svg class="eco-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="10" y="20" width="28" height="20"/>
+        <polygon points="10,20 24,8 38,20"/>
+        <line x1="20" y1="40" x2="20" y2="28"/>
+        <line x1="28" y1="40" x2="28" y2="28"/>
+      </svg>
+      <h4>Space Reserve</h4>
+      <p>Audited custody of physical-aerospace collateral — under American institutional oversight.</p>
+      <div class="eco-meta"><span>Layer 04</span><span class="status-soon">◐ Soon</span></div>
+    </div>
+
+    <div class="eco-card">
+      <svg class="eco-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
+        <circle cx="24" cy="24" r="16"/>
+        <ellipse cx="24" cy="24" rx="16" ry="6"/>
+        <ellipse cx="24" cy="24" rx="6" ry="16"/>
+      </svg>
+      <h4>NASA-grade Markets</h4>
+      <p>Open exchange layer for aerospace-grade instruments — built to NASA-equivalent reliability and audit standards.</p>
+      <div class="eco-meta"><span>Layer 05</span><span class="status-soon">◐ Soon</span></div>
+    </div>
+
+    <div class="eco-card">
+      <svg class="eco-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="12" y="12" width="24" height="24"/>
+        <line x1="18" y1="20" x2="30" y2="20"/>
+        <line x1="18" y1="24" x2="26" y2="24"/>
+        <line x1="18" y1="28" x2="30" y2="28"/>
+        <circle cx="36" cy="12" r="3" fill="currentColor"/>
+      </svg>
+      <h4>Aerospace AI Layer</h4>
+      <p>Autonomous orbital allocation engine — risk-modeling LEO/MEO/GEO exposure across the reserve in real time.</p>
+      <div class="eco-meta"><span>Layer 06</span><span class="status-soon">◐ Soon</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<section class="timeline" id="roadmap">
+  <div class="section-label">// 06 — Trajectory</div>
+  <h2 class="section-title">A decade of <em>orbital capitalization.</em></h2>
+  <p class="section-sub">From the first tokenized satellite to the first interplanetary reserve layer — a multi-decade trajectory designed to scale with American aerospace capability.</p>
+
+  <div class="timeline-track">
+    <div class="tl-item active">
+      <div class="tl-year">2026</div>
+      <h3 class="tl-title">Aerospace Tokenization</h3>
+      <p class="tl-desc">Launch of NOVA Token</p>
+      <span class="tl-status">Active</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2027</div>
+      <h3 class="tl-title">Orbital Treasury</h3>
+      <p class="tl-desc">Multi-tier custody framework live. Sovereign and institutional onboarding pipeline opens with full audit transparency.</p>
+      <span class="tl-status">Q3 2027</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2028</div>
+      <h3 class="tl-title">Lunar Asset Markets</h3>
+      <p class="tl-desc">First lunar logistics contracts represented on-chain. Cislunar bandwidth rights enter the orbital reserve basket.</p>
+      <span class="tl-status">Phase 03</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2030</div>
+      <h3 class="tl-title">Mars Financial Infrastructure</h3>
+      <p class="tl-desc">Settlement rails extended to Mars-relay satellite networks. Multi-orbit risk pricing goes live.</p>
+      <span class="tl-status">Phase 04</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2035</div>
+      <h3 class="tl-title">Interplanetary Reserve Layer</h3>
+      <p class="tl-desc">NOVA becomes the unified reserve denominator for off-world capital — sovereign, programmable, and institutional-grade.</p>
+      <span class="tl-status">Phase 05</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESERVE STATEMENT ============ -->
+<section class="reserve">
+  <div class="reserve-earth"></div>
+  <div class="reserve-content">
+    <h2 class="reserve-display">The next reserve asset<br>won't be built on <em>Earth.</em></h2>
+    <div class="reserve-tag">// NOVA — National Orbit Value Asset</div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta">
+  <div class="cta-particles"></div>
+  <div class="cta-mark">
+    <svg viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+      <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/>
+      <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(74,141,255,0.5)" stroke-width="0.5" stroke-dasharray="2 3"/>
+      <circle cx="50" cy="50" r="20" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="0.5"/>
+      <circle cx="50" cy="50" r="3" fill="#6ba3ff"/>
+      <circle cx="98" cy="50" r="2" fill="#fff"/>
+      <circle cx="50" cy="2" r="1.5" fill="#ff7a3d"/>
+    </svg>
+  </div>
+  <h2 class="cta-title">Join the <em>Mission.</em></h2>
+  <p class="cta-sub">Be part of the first generation of orbital reserve holders.</p>
+
+  <div class="contract">
+    <div class="contract-label">Contract</div>
+    <div class="contract-addr" id="contractAddr">0xN0VA…0RB1T7AF22B5C9E1D3F84A6B7C8D9E0F1A2B3C4D5E6F</div>
+    <button class="contract-copy" id="copyBtn">Copy</button>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="legal">
+    <p>Notice: The National Orbit Value Asset (NOVA) is implemented as a digital registry on the Solana blockchain. This website provides general information on orbital infrastructure, aerospace markets, tokenization frameworks, and related policy context. It does not constitute investment, legal, aerospace, financial, or official government advice. Digital assets may be highly volatile.</p>
+    <p style="margin-top:12px;">© National Orbit Value Asset (NOVA). All rights reserved.</p>
+  </div>
+  <div class="links">
+    <a href="#">Phantom</a>
+    <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Mission Brief</a>
+    <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Audit</a>
+  </div>
+</footer>
+
+<script>
+  // ============ UTILS ============
+  function pad(n) { return String(n).padStart(2,'0'); }
+
+  // ============ HERO CLOCK ============
+  const heroClock = document.getElementById('heroClock');
+  function tickHero() {
+    const d = new Date();
+    heroClock.textContent = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+  }
+  setInterval(tickHero, 1000); tickHero();
+
+  // ============ TICKS ON ORBIT SVG ============
+  const ticks = document.getElementById('ticks');
+  if (ticks) {
+    let html = '';
+    for (let i = 0; i < 60; i++) {
+      const angle = (i / 60) * Math.PI * 2;
+      const r1 = 285, r2 = i % 5 === 0 ? 275 : 280;
+      const x1 = 300 + Math.cos(angle) * r1;
+      const y1 = 300 + Math.sin(angle) * r1;
+      const x2 = 300 + Math.cos(angle) * r2;
+      const y2 = 300 + Math.sin(angle) * r2;
+      html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />`;
+    }
+    ticks.innerHTML = html;
+  }
+
+  // ============ COUNTDOWN ============
+  // Targets next June 8 at 09:00 UTC
+  function getTargetDate() {
+    const now = new Date();
+    let year = now.getUTCFullYear();
+    let target = new Date(Date.UTC(year, 5, 8, 9, 0, 0));
+    if (now > target) target = new Date(Date.UTC(year + 1, 5, 8, 9, 0, 0));
+    return target;
+  }
+  const target = getTargetDate();
+  function tickCountdown() {
+    const now = new Date();
+    let diff = Math.max(0, Math.floor((target - now) / 1000));
+    const d = Math.floor(diff / 86400); diff -= d * 86400;
+    const h = Math.floor(diff / 3600); diff -= h * 3600;
+    const m = Math.floor(diff / 60);
+    const s = diff - m * 60;
+    document.getElementById('cd-d').textContent = pad(d);
+    document.getElementById('cd-h').textContent = pad(h);
+    document.getElementById('cd-m').textContent = pad(m);
+    document.getElementById('cd-s').textContent = pad(s);
+  }
+  setInterval(tickCountdown, 1000); tickCountdown();
+
+  // ============ NODE GRID ============
+  const nodeGrid = document.getElementById('nodeGrid');
+  if (nodeGrid) {
+    let html = '';
+    const TOTAL = 200, ACTIVE = 119;
+    nodeGrid.outerHTML = ''; // we'll replace via parent
+  }
+  // Find the parent and inject 200 nodes
+  const nodeContainer = document.querySelector('#tokenomics .terminal-panel:nth-child(5) > div:last-child');
+  if (nodeContainer) {
+    let html = '';
+    for (let i = 0; i < 200; i++) {
+      const active = i < 119;
+      const color = active ? (i > 113 ? 'background:#6ba3ff;box-shadow:0 0 6px #6ba3ff' : 'background:#4a8dff') : 'background:rgba(255,255,255,0.06)';
+      html += `<span style="display:block;height:8px;${color}"></span>`;
+    }
+    nodeContainer.innerHTML = html;
+  }
+
+  // ============ COPY CONTRACT ============
+  function wireCopy(btnId, addrId) {
+    const btn = document.getElementById(btnId);
+    const addrEl = document.getElementById(addrId);
+    if (!btn || !addrEl) return;
+    btn.addEventListener('click', () => {
+      navigator.clipboard?.writeText(addrEl.textContent).catch(()=>{});
+      btn.textContent = 'Copied';
+      setTimeout(() => btn.textContent = 'Copy', 1600);
+    });
+  }
+  wireCopy('copyBtn', 'contractAddr');
+  wireCopy('copyBtnHero', 'contractAddrHero');
+
+  // ============ HOVER GLOW ON WHY CARDS ============
+  document.querySelectorAll('.why-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    });
+  });
+
+  // ============ ANIMATED CAP NUMBER ============
+  const capEl = document.getElementById('capNum');
+  let capObserved = false;
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !capObserved) {
+        capObserved = true;
+        let start = 0, end = 1.247;
+        const duration = 1800, t0 = performance.now();
+        function step(t) {
+          const p = Math.min(1, (t - t0) / duration);
+          const eased = 1 - Math.pow(1 - p, 3);
+          const v = (start + (end - start) * eased).toFixed(3);
+          capEl.innerHTML = v + '<span class="unit">B</span>';
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+    });
+  }, { threshold: 0.4 });
+  if (capEl) obs.observe(capEl);
+
+  // ============ REVEAL ON SCROLL ============
+  const revealEls = document.querySelectorAll('.section-title, .section-sub, .why-card, .eco-card, .tl-item, .terminal-panel');
+  revealEls.forEach(el => el.classList.add('reveal'));
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('in'), i * 60);
+        revealObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => revealObs.observe(el));
+</script>
+
+</body>
+</html>
