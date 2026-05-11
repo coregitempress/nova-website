@@ -1,6 +1,12 @@
 {
   "version": 2,
   "public": true,
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
   "routes": [
     {
       "src": "/",
@@ -9,6 +15,10 @@
     {
       "src": "/logo.png",
       "dest": "/logo.png"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
